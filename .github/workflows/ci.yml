@@ -35,11 +35,11 @@ jobs:
 
       - name: SonarCloud analysis
         env:
-          SONAR_TOKEN: ${{ secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
+          SONAR_TOKEN: ${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
           mvn sonar:sonar
           -Dsonar.organization=janneh24
           -Dsonar.projectKey=Janneh24_Event-Ticketing-Application
           -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.token=${{ secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
+          -Dsonar.token=${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
