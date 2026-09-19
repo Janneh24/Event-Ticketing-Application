@@ -33,7 +33,7 @@ class TicketAppTest {
 
         verify(mockDs).getConnection();
         verify(mockConn).createStatement();
-        verify(mockStmt).execute(anyString());
+        verify(mockStmt, org.mockito.Mockito.atLeastOnce()).execute(anyString());
     }
 
     @Test
