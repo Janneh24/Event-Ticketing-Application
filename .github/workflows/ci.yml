@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Build and Verify with Maven
-        run: xvfb-run mvn clean verify -Pjacoco
+        run: xvfb-run mvn clean verify
 
       - name: Upload coverage to Coveralls
         env:

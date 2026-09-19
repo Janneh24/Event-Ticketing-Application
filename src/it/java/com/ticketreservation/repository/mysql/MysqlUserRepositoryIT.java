@@ -60,4 +60,9 @@ class MysqlUserRepositoryIT extends AbstractMysqlRepositoryIT {
         userRepository.delete(saved.getId());
         assertThat(userRepository.findById(saved.getId())).isNull();
     }
+
+    @Test
+    void testFindByIdNotFoundReturnsNull() {
+        assertThat(userRepository.findById(999999L)).isNull();
+    }
 }

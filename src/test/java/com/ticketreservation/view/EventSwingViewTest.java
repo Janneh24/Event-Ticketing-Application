@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -159,5 +160,134 @@ class EventSwingViewTest {
         GuiActionRunner.execute(() -> window.comboBox("eventCombo").target().setSelectedItem(null));
         GuiActionRunner.execute(() -> window.button("exportPdfButton").target().doClick());
         window.label("errorLabel").requireText("Please select an event to export PDF");
+    }
+
+    @Test
+    void testTableCellsAreNotEditable() {
+        assertThat(window.table("eventTable").target().isCellEditable(0, 0)).isFalse();
+        assertThat(window.table("seatTable").target().isCellEditable(0, 0)).isFalse();
+    }
+
+    @Test
+    void testReserveButtonWhenUserIsNull() {
+        EventSwingView nullUserView = GuiActionRunner.execute(() ->
+                new EventSwingView(eventController, ticketController, null));
+        FrameFixture nullWindow = new FrameFixture(nullUserView);
+        nullWindow.show();
+        try {
+            TicketReservation res = new TicketReservation(2L, "2026-09-16", "Bob", 150.0, null, 10L, 50L);
+            when(ticketController.reserveTicket(any(TicketReservation.class))).thenReturn(res);
+
+            nullWindow.textBox("customerNameField").setText("Bob");
+            GuiActionRunner.execute(() -> nullWindow.table("seatTable").target().setRowSelectionInterval(0, 0));
+            GuiActionRunner.execute(() -> nullWindow.button("reserveButton").target().doClick());
+
+            verify(ticketController).reserveTicket(any(TicketReservation.class));
+            nullWindow.label("errorLabel").requireText(" ");
+        } finally {
+            nullWindow.cleanUp();
+        }
+    }
+
+    @Test
+    void testCancelButtonWhenReservationDoesNotMatchSeatOrEvent() {
+        TicketReservation mismatchSeat = new TicketReservation(2L, "2026-09-16", "Bob", 100.0, 2L, 10L, 999L);
+        TicketReservation mismatchEvent = new TicketReservation(3L, "2026-09-16", "Bob", 100.0, 2L, 999L, 50L);
+        when(ticketController.getAllReservations()).thenReturn(List.of(mismatchSeat, mismatchEvent));
+
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("cancelButton").target().doClick());
+
+        window.label("errorLabel").requireText("No active reservation found for selected seat");
+    }
+
+    @Test
+    void testExportPdfButtonSuccessWithCustomFileChooser() throws Exception {
+        java.io.File tempFile = java.io.File.createTempFile("test_export_", ".pdf");
+        tempFile.deleteOnExit();
+
+        javax.swing.JFileChooser mockChooser = new javax.swing.JFileChooser() {
+            @Override
+            public int showSaveDialog(java.awt.Component parent) {
+                return javax.swing.JFileChooser.APPROVE_OPTION;
+            }
+            @Override
+            public java.io.File getSelectedFile() {
+                return tempFile;
+            }
+        };
+
+        User user = new User(1L, "alice", "pass", "CUSTOMER", true);
+        EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
+            @Override
+            protected javax.swing.JFileChooser createFileChooser() {
+                return mockChooser;
+            }
+        });
+        FrameFixture customWindow = new FrameFixture(customView);
+        customWindow.show();
+
+        try {
+            TicketReservation matchingRes = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
+            TicketReservation nonMatchingRes = new TicketReservation(2L, "2026-09-16", "Bob", 50.0, 2L, 99L, 60L);
+            when(ticketController.getAllReservations()).thenReturn(List.of(matchingRes, nonMatchingRes));
+
+            GuiActionRunner.execute(() -> customWindow.button("exportPdfButton").target().doClick());
+
+            customWindow.label("errorLabel").requireText(" ");
+            assertThat(tempFile.length()).isGreaterThan(0L);
+        } finally {
+            customWindow.cleanUp();
+        }
+    }
+
+    @Test
+    void testExportPdfButtonCancelDialog() {
+        javax.swing.JFileChooser mockChooser = new javax.swing.JFileChooser() {
+            @Override
+            public int showSaveDialog(java.awt.Component parent) {
+                return javax.swing.JFileChooser.CANCEL_OPTION;
+            }
+        };
+
+        User user = new User(1L, "alice", "pass", "CUSTOMER", true);
+        EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
+            @Override
+            protected javax.swing.JFileChooser createFileChooser() {
+                return mockChooser;
+            }
+        });
+        FrameFixture customWindow = new FrameFixture(customView);
+        customWindow.show();
+
+        try {
+            when(ticketController.getAllReservations()).thenReturn(Collections.emptyList());
+            GuiActionRunner.execute(() -> customWindow.button("exportPdfButton").target().doClick());
+
+            customWindow.label("errorLabel").requireText(" ");
+        } finally {
+            customWindow.cleanUp();
+        }
+    }
+
+    @Test
+    void testExportPdfToFileExceptionHandled() {
+        Event event = new Event(10L, "Opera Show", "2026-10-15", "Florence Theatre", 100, 100);
+        java.io.File invalidFile = new java.io.File("/non_existent_folder_xyz123/impossible_file.pdf");
+
+        view.exportPdfToFile(event, List.of(), invalidFile);
+
+        assertThat(window.label("errorLabel").target().getText()).contains("Failed to export PDF");
+    }
+
+    @Test
+    void testDefaultCreateFileChooserReturnsNonNull() {
+        assertThat(view.createFileChooser()).isNotNull();
+    }
+
+    @Test
+    void testEventWrapperToString() {
+        assertThat(window.comboBox("eventCombo").target().getItemAt(0).toString())
+                .isEqualTo("Opera Show (2026-10-15)");
     }
 }

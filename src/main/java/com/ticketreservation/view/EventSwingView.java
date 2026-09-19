@@ -287,19 +287,26 @@ public class EventSwingView extends JFrame {
             }
         }
 
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = createFileChooser();
         fileChooser.setSelectedFile(new File("Event_Summary_" + event.getId() + ".pdf"));
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File targetFile = fileChooser.getSelectedFile();
-            try (FileOutputStream fos = new FileOutputStream(targetFile)) {
-                PdfReportExporter exporter = new PdfReportExporter();
-                exporter.exportEventReport(event, eventReservations, fos);
-                errorLabel.setText(" ");
-            } catch (IOException | RuntimeException ex) {
-                LOGGER.log(Level.WARNING, "Error exporting PDF report", ex);
-                errorLabel.setText("Failed to export PDF: " + ex.getMessage());
-            }
+            exportPdfToFile(event, eventReservations, fileChooser.getSelectedFile());
         }
+    }
+
+    void exportPdfToFile(Event event, List<TicketReservation> eventReservations, File targetFile) {
+        try (FileOutputStream fos = new FileOutputStream(targetFile)) {
+            PdfReportExporter exporter = new PdfReportExporter();
+            exporter.exportEventReport(event, eventReservations, fos);
+            errorLabel.setText(" ");
+        } catch (IOException | RuntimeException ex) {
+            LOGGER.log(Level.WARNING, "Error exporting PDF report", ex);
+            errorLabel.setText("Failed to export PDF: " + ex.getMessage());
+        }
+    }
+
+    protected JFileChooser createFileChooser() {
+        return new JFileChooser();
     }
 
     private static class EventWrapper {

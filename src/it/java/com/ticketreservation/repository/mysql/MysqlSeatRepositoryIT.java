@@ -42,4 +42,18 @@ class MysqlSeatRepositoryIT extends AbstractMysqlRepositoryIT {
         seatRepository.delete(seat2.getId());
         assertThat(seatRepository.findById(seat2.getId())).isNull();
     }
+
+    @Test
+    void testFindAll() {
+        Event event = eventRepository.save(new Event(0L, "Opera", "2026-12-15", "Hall", 30, 30));
+        Seat seat = seatRepository.save(new Seat(0L, event.getId(), "B-1", "VIP", 150.0, "AVAILABLE"));
+
+        List<Seat> allSeats = seatRepository.findAll();
+        assertThat(allSeats).extracting(Seat::getId).contains(seat.getId());
+    }
+
+    @Test
+    void testFindByIdNotFoundReturnsNull() {
+        assertThat(seatRepository.findById(999999L)).isNull();
+    }
 }

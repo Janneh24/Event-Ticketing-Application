@@ -41,4 +41,9 @@ class MysqlEventRepositoryIT extends AbstractMysqlRepositoryIT {
         eventRepository.delete(saved.getId());
         assertThat(eventRepository.findById(saved.getId())).isNull();
     }
+
+    @Test
+    void testFindByIdNotFoundReturnsNull() {
+        assertThat(eventRepository.findById(999999L)).isNull();
+    }
 }
