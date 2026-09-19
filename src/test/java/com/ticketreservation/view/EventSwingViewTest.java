@@ -15,9 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,9 +96,68 @@ class EventSwingViewTest {
     }
 
     @Test
+    void testReserveButtonFailureShowsError() {
+        when(ticketController.reserveTicket(any(TicketReservation.class)))
+                .thenThrow(new RuntimeException("Seat already booked"));
+
+        window.textBox("customerNameField").setText("Alice");
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("reserveButton").target().doClick());
+
+        window.label("errorLabel").requireText("Seat already booked");
+    }
+
+    @Test
     void testCancelButtonWithoutSelectingSeatShowsError() {
         GuiActionRunner.execute(() -> window.table("seatTable").target().clearSelection());
         GuiActionRunner.execute(() -> window.button("cancelButton").target().doClick());
         window.label("errorLabel").requireText("Please select a seat to cancel reservation");
+    }
+
+    @Test
+    void testCancelButtonWhenNoActiveReservationFoundShowsError() {
+        when(ticketController.getAllReservations()).thenReturn(Collections.emptyList());
+
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("cancelButton").target().doClick());
+
+        window.label("errorLabel").requireText("No active reservation found for selected seat");
+    }
+
+    @Test
+    void testCancelButtonSuccess() {
+        TicketReservation res = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
+        when(ticketController.getAllReservations()).thenReturn(List.of(res));
+
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("cancelButton").target().doClick());
+
+        verify(ticketController).cancelReservation(1L);
+        window.label("errorLabel").requireText(" ");
+    }
+
+    @Test
+    void testCancelButtonFailureShowsError() {
+        TicketReservation res = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
+        when(ticketController.getAllReservations()).thenReturn(List.of(res));
+        doThrow(new RuntimeException("Cancel failed")).when(ticketController).cancelReservation(1L);
+
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("cancelButton").target().doClick());
+
+        window.label("errorLabel").requireText("Cancel failed");
+    }
+
+    @Test
+    void testSelectEventInTableUpdatesEventCombo() {
+        GuiActionRunner.execute(() -> window.table("eventTable").target().setRowSelectionInterval(0, 0));
+        window.comboBox("eventCombo").requireSelection(0);
+    }
+
+    @Test
+    void testExportPdfButtonWithoutSelectedEventShowsError() {
+        GuiActionRunner.execute(() -> window.comboBox("eventCombo").target().setSelectedItem(null));
+        GuiActionRunner.execute(() -> window.button("exportPdfButton").target().doClick());
+        window.label("errorLabel").requireText("Please select an event to export PDF");
     }
 }
