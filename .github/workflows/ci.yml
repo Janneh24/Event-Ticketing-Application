@@ -33,6 +33,11 @@ jobs:
       - name: Build and Verify with Maven
         run: xvfb-run mvn clean verify -Pjacoco
 
+      - name: Upload coverage to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN || secrets.COVERALLSTOKEN || secrets.COVERALLS_TOKEN }}
+        run: mvn coveralls:report -DrepoToken=${{ secrets.COVERALLS_REPO_TOKEN || secrets.COVERALLSTOKEN || secrets.COVERALLS_TOKEN }}
+
       - name: SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
