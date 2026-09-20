@@ -176,23 +176,16 @@ class EventSwingViewTest {
 
     @Test
     void testReserveButtonWhenUserIsNull() {
-        EventSwingView nullUserView = GuiActionRunner.execute(() ->
-                new EventSwingView(eventController, ticketController, null));
-        FrameFixture nullWindow = new FrameFixture(nullUserView);
-        nullWindow.show();
-        try {
-            TicketReservation res = new TicketReservation(2L, "2026-09-16", "Bob", 150.0, null, 10L, 50L);
-            when(ticketController.reserveTicket(any(TicketReservation.class))).thenReturn(res);
+        view.setCurrentUser(null);
+        TicketReservation res = new TicketReservation(2L, "2026-09-16", "Bob", 150.0, null, 10L, 50L);
+        when(ticketController.reserveTicket(any(TicketReservation.class))).thenReturn(res);
 
-            nullWindow.textBox("customerNameField").setText("Bob");
-            GuiActionRunner.execute(() -> nullWindow.table("seatTable").target().setRowSelectionInterval(0, 0));
-            GuiActionRunner.execute(() -> nullWindow.button("reserveButton").target().doClick());
+        window.textBox("customerNameField").setText("Bob");
+        GuiActionRunner.execute(() -> window.table("seatTable").target().setRowSelectionInterval(0, 0));
+        GuiActionRunner.execute(() -> window.button("reserveButton").target().doClick());
 
-            verify(ticketController).reserveTicket(any(TicketReservation.class));
-            nullWindow.label("errorLabel").requireText(" ");
-        } finally {
-            nullWindow.cleanUp();
-        }
+        verify(ticketController).reserveTicket(any(TicketReservation.class));
+        window.label("errorLabel").requireText(" ");
     }
 
     @Test
@@ -216,28 +209,16 @@ class EventSwingViewTest {
         when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.APPROVE_OPTION);
         when(mockChooser.getSelectedFile()).thenReturn(tempFile);
 
-        User user = new User(1L, "alice", "pass", "CUSTOMER", true);
-        EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
-            @Override
-            protected javax.swing.JFileChooser createFileChooser() {
-                return mockChooser;
-            }
-        });
-        FrameFixture customWindow = new FrameFixture(customView);
-        customWindow.show();
+        view.setFileChooser(mockChooser);
 
-        try {
-            TicketReservation matchingRes = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
-            TicketReservation nonMatchingRes = new TicketReservation(2L, "2026-09-16", "Bob", 50.0, 2L, 99L, 60L);
-            when(ticketController.getAllReservations()).thenReturn(List.of(matchingRes, nonMatchingRes));
+        TicketReservation matchingRes = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
+        TicketReservation nonMatchingRes = new TicketReservation(2L, "2026-09-16", "Bob", 50.0, 2L, 99L, 60L);
+        when(ticketController.getAllReservations()).thenReturn(List.of(matchingRes, nonMatchingRes));
 
-            GuiActionRunner.execute(() -> customWindow.button("exportPdfButton").target().doClick());
+        GuiActionRunner.execute(() -> window.button("exportPdfButton").target().doClick());
 
-            customWindow.label("errorLabel").requireText(" ");
-            assertThat(tempFile.length()).isGreaterThan(0L);
-        } finally {
-            customWindow.cleanUp();
-        }
+        window.label("errorLabel").requireText(" ");
+        assertThat(tempFile.length()).isGreaterThan(0L);
     }
 
     @Test
@@ -245,24 +226,12 @@ class EventSwingViewTest {
         javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
         when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.CANCEL_OPTION);
 
-        User user = new User(1L, "alice", "pass", "CUSTOMER", true);
-        EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
-            @Override
-            protected javax.swing.JFileChooser createFileChooser() {
-                return mockChooser;
-            }
-        });
-        FrameFixture customWindow = new FrameFixture(customView);
-        customWindow.show();
+        view.setFileChooser(mockChooser);
 
-        try {
-            when(ticketController.getAllReservations()).thenReturn(Collections.emptyList());
-            GuiActionRunner.execute(() -> customWindow.button("exportPdfButton").target().doClick());
+        when(ticketController.getAllReservations()).thenReturn(Collections.emptyList());
+        GuiActionRunner.execute(() -> window.button("exportPdfButton").target().doClick());
 
-            customWindow.label("errorLabel").requireText(" ");
-        } finally {
-            customWindow.cleanUp();
-        }
+        window.label("errorLabel").requireText(" ");
     }
 
     @Test
