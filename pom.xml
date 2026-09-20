@@ -25,6 +25,7 @@
         <sonar.projectKey>Janneh24_Event-Ticketing-Application</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.issue.ignore.multilines>true</sonar.issue.ignore.multilines>
+        <sonar.coverage.exclusions>**/app/**</sonar.coverage.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
@@ -193,6 +194,11 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/app/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

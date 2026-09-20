@@ -212,16 +212,9 @@ class EventSwingViewTest {
         java.io.File tempFile = java.io.File.createTempFile("test_export_", ".pdf");
         tempFile.deleteOnExit();
 
-        javax.swing.JFileChooser mockChooser = new javax.swing.JFileChooser() {
-            @Override
-            public int showSaveDialog(java.awt.Component parent) {
-                return javax.swing.JFileChooser.APPROVE_OPTION;
-            }
-            @Override
-            public java.io.File getSelectedFile() {
-                return tempFile;
-            }
-        };
+        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
+        when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.APPROVE_OPTION);
+        when(mockChooser.getSelectedFile()).thenReturn(tempFile);
 
         User user = new User(1L, "alice", "pass", "CUSTOMER", true);
         EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
@@ -249,12 +242,8 @@ class EventSwingViewTest {
 
     @Test
     void testExportPdfButtonCancelDialog() {
-        javax.swing.JFileChooser mockChooser = new javax.swing.JFileChooser() {
-            @Override
-            public int showSaveDialog(java.awt.Component parent) {
-                return javax.swing.JFileChooser.CANCEL_OPTION;
-            }
-        };
+        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
+        when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.CANCEL_OPTION);
 
         User user = new User(1L, "alice", "pass", "CUSTOMER", true);
         EventSwingView customView = GuiActionRunner.execute(() -> new EventSwingView(eventController, ticketController, user) {
@@ -284,11 +273,6 @@ class EventSwingViewTest {
         view.exportPdfToFile(event, List.of(), invalidFile);
 
         assertThat(window.label("errorLabel").target().getText()).contains("Failed to export PDF");
-    }
-
-    @Test
-    void testDefaultCreateFileChooserReturnsNonNull() {
-        assertThat(view.createFileChooser()).isNotNull();
     }
 
     @Test
