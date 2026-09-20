@@ -45,8 +45,18 @@ class TicketAppTest {
                 .doesNotThrowAnyException();
     }
 
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() throws Exception {
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                w.setVisible(false);
+                w.dispose();
+            }
+        });
+    }
+
     @Test
-    void testMainMethodExecution() {
+    void testMainMethodExecution() throws Exception {
         // Run main method with dummy properties to ensure graceful initialization
         System.setProperty("db.host", "localhost");
         System.setProperty("db.port", "3306");
@@ -56,5 +66,12 @@ class TicketAppTest {
 
         assertThatCode(() -> TicketApp.main(new String[0]))
                 .doesNotThrowAnyException();
+
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                w.setVisible(false);
+                w.dispose();
+            }
+        });
     }
 }

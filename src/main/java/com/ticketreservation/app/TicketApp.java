@@ -25,6 +25,16 @@ public class TicketApp {
 
     private static final Logger LOGGER = Logger.getLogger(TicketApp.class.getName());
 
+    private static EventSwingView currentView;
+
+    public static EventSwingView getCurrentView() {
+        return currentView;
+    }
+
+    public static void setCurrentView(EventSwingView view) {
+        currentView = view;
+    }
+
     public static void main(String[] args) {
         String host = System.getProperty("db.host", "localhost");
         int port = Integer.parseInt(System.getProperty("db.port", "3306"));
@@ -52,8 +62,8 @@ public class TicketApp {
 
         SwingUtilities.invokeLater(() -> {
             User defaultUser = userController.getUserByUsername("organizer");
-            EventSwingView view = new EventSwingView(eventController, ticketController, defaultUser);
-            view.setVisible(true);
+            currentView = new EventSwingView(eventController, ticketController, defaultUser);
+            currentView.setVisible(true);
         });
     }
 

@@ -51,10 +51,16 @@ class EventSwingViewTest {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
         if (window != null) {
             window.cleanUp();
         }
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                w.setVisible(false);
+                w.dispose();
+            }
+        });
     }
 
     @Test
