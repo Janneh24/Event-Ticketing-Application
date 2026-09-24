@@ -64,10 +64,19 @@ class EventControllerTest {
         assertThatThrownBy(() -> eventController.createEvent(null))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> eventController.createEvent(new Event(0L, null, "2026-10-10", "Hall", 100, 100)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "", "2026-10-10", "Hall", 100, 100)))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", null, "Hall", 100, 100)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "", "Hall", 100, 100)))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", null, 100, 100)))
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", "", 100, 100)))

@@ -40,15 +40,16 @@ public class MysqlUserRepository implements UserRepository {
     @Override
     public User findById(long id) {
         String sql = "SELECT * FROM users WHERE id = ?";
+        User user = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractUser(rs);
+                    user = extractUser(rs);
                 }
             }
-            return null;
+            return user;
         } catch (SQLException e) {
             throw new RepositoryException("Error finding user by id: " + id, e);
         }
@@ -57,15 +58,16 @@ public class MysqlUserRepository implements UserRepository {
     @Override
     public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
+        User user = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractUser(rs);
+                    user = extractUser(rs);
                 }
             }
-            return null;
+            return user;
         } catch (SQLException e) {
             throw new RepositoryException("Error finding user by username: " + username, e);
         }

@@ -249,4 +249,33 @@ class EventSwingViewTest {
         assertThat(window.comboBox("eventCombo").target().getItemAt(0).toString())
                 .isEqualTo("Opera Show (2026-10-15)");
     }
+
+    @Test
+    void testGetFileChooserDefaultAndCustom() {
+        view.setFileChooser(null);
+        assertThat(view.getFileChooser()).isNotNull();
+
+        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
+        view.setFileChooser(mockChooser);
+        assertThat(view.getFileChooser()).isSameAs(mockChooser);
+    }
+
+    @Test
+    void testSelectEventInTableEdgeCases() {
+        // Ensure a row is selected first
+        GuiActionRunner.execute(() -> window.table("eventTable").target().setRowSelectionInterval(0, 0));
+        assertThat(window.table("eventTable").target().getSelectedRow()).isEqualTo(0);
+
+        // Clear selection to fire event with row == -1
+        GuiActionRunner.execute(() -> window.table("eventTable").target().clearSelection());
+        assertThat(window.table("eventTable").target().getSelectedRow()).isEqualTo(-1);
+
+        // Remove combo items and select row 0 from cleared state so row >= eventCombo.getItemCount()
+        GuiActionRunner.execute(() -> {
+            window.comboBox("eventCombo").target().removeAllItems();
+            window.table("eventTable").target().setRowSelectionInterval(0, 0);
+        });
+        assertThat(window.table("eventTable").target().getSelectedRow()).isEqualTo(0);
+    }
 }
+

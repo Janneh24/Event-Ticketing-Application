@@ -46,6 +46,11 @@ class UserTest {
         assertThat(user1).isNotEqualTo(user3);
         assertThat(user1).isNotEqualTo(null);
         assertThat(user1).isNotEqualTo("some string");
+        assertThat(user1).isNotEqualTo(new User(1L, "diff_user", "pass", "CUSTOMER", true));
+        assertThat(user1).isNotEqualTo(new User(1L, "john", "diff_pass", "CUSTOMER", true));
+        assertThat(user1).isNotEqualTo(new User(1L, "john", "pass", "ORGANIZER", true));
+        assertThat(user1).isNotEqualTo(new User(1L, "john", "pass", "CUSTOMER", false));
+        assertThat(user1).isNotEqualTo(new User(1L, null, "pass", "CUSTOMER", true));
     }
 
     @Test

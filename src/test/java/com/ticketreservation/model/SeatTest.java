@@ -49,6 +49,12 @@ class SeatTest {
         assertThat(seat1).isNotEqualTo(seat3);
         assertThat(seat1).isNotEqualTo(null);
         assertThat(seat1).isNotEqualTo("other object");
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 20L, "A-101", "VIP", 150.0, "AVAILABLE"));
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 10L, "B-202", "VIP", 150.0, "AVAILABLE"));
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 10L, "A-101", "REGULAR", 150.0, "AVAILABLE"));
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 10L, "A-101", "VIP", 200.0, "AVAILABLE"));
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 10L, "A-101", "VIP", 150.0, "RESERVED"));
+        assertThat(seat1).isNotEqualTo(new Seat(1L, 10L, null, "VIP", 150.0, "AVAILABLE"));
     }
 
     @Test

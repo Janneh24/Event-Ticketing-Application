@@ -52,6 +52,14 @@ class TicketReservationTest {
         assertThat(res1).isNotEqualTo(res3);
         assertThat(res1).isNotEqualTo(null);
         assertThat(res1).isNotEqualTo("other object");
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-12-12", "Alice", 150.0, 5L, 10L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "DiffName", 150.0, 5L, 10L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "Alice", 200.0, 5L, 10L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 99L, 10L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 5L, 99L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 5L, 10L, 999L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, "2026-09-16", "Alice", 150.0, null, 10L, 100L));
+        assertThat(res1).isNotEqualTo(new TicketReservation(1L, null, "Alice", 150.0, 5L, 10L, 100L));
     }
 
     @Test

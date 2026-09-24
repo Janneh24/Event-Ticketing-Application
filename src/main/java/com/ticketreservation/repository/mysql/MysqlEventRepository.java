@@ -40,15 +40,16 @@ public class MysqlEventRepository implements EventRepository {
     @Override
     public Event findById(long id) {
         String sql = "SELECT * FROM events WHERE id = ?";
+        Event event = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractEvent(rs);
+                    event = extractEvent(rs);
                 }
             }
-            return null;
+            return event;
         } catch (SQLException e) {
             throw new RepositoryException("Error finding event by id: " + id, e);
         }

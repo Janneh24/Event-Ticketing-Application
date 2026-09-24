@@ -61,6 +61,10 @@ class UserControllerTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Username cannot be empty");
 
+        assertThatThrownBy(() -> userController.getUserByUsername(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username cannot be empty");
+
         when(userRepository.findByUsername("unknown")).thenReturn(null);
         assertThatThrownBy(() -> userController.getUserByUsername("unknown"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -90,10 +94,19 @@ class UserControllerTest {
         assertThatThrownBy(() -> userController.createUser(null))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> userController.createUser(new User(0L, null, "pass", "CUSTOMER", true)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> userController.createUser(new User(0L, "", "pass", "CUSTOMER", true)))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", null, "CUSTOMER", true)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "", "CUSTOMER", true)))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", null, true)))
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", "", true)))
@@ -140,7 +153,21 @@ class UserControllerTest {
         assertThatThrownBy(() -> userController.login("", "pass"))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> userController.login(null, "pass"))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> userController.login("alice", ""))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> userController.login("alice", null))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> userController.login("alice", "wrongpass"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid username or password");
+
+        when(userRepository.findByUsername("unknown")).thenReturn(null);
+        assertThatThrownBy(() -> userController.login("unknown", "pass"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid username or password");
 

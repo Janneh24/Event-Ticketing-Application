@@ -51,6 +51,10 @@ public class EventSwingView extends JFrame {
         this.fileChooser = fileChooser;
     }
 
+    public JFileChooser getFileChooser() {
+        return (this.fileChooser != null) ? this.fileChooser : new JFileChooser();
+    }
+
     private JTable eventTable;
     private DefaultTableModel eventTableModel;
     private JTable seatTable;
@@ -99,11 +103,9 @@ public class EventSwingView extends JFrame {
         eventTable = new JTable(eventTableModel);
         eventTable.setName("eventTable");
         eventTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && eventTable.getSelectedRow() != -1) {
-                int row = eventTable.getSelectedRow();
-                if (row < eventCombo.getItemCount()) {
-                    eventCombo.setSelectedIndex(row);
-                }
+            int row = eventTable.getSelectedRow();
+            if (row >= 0 && row < eventCombo.getItemCount()) {
+                eventCombo.setSelectedIndex(row);
             }
         });
         JScrollPane eventScrollPane = new JScrollPane(eventTable);
@@ -220,7 +222,7 @@ public class EventSwingView extends JFrame {
             return;
         }
 
-        String customerName = customerNameField.getText() == null ? "" : customerNameField.getText().trim();
+        String customerName = customerNameField.getText().trim();
         if (customerName.isEmpty()) {
             errorLabel.setText("Customer name cannot be empty");
             return;
@@ -296,7 +298,7 @@ public class EventSwingView extends JFrame {
             }
         }
 
-        JFileChooser chooser = (this.fileChooser != null) ? this.fileChooser : createFileChooser();
+        JFileChooser chooser = getFileChooser();
         chooser.setSelectedFile(new File("Event_Summary_" + event.getId() + ".pdf"));
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             exportPdfToFile(event, eventReservations, chooser.getSelectedFile());
@@ -312,10 +314,6 @@ public class EventSwingView extends JFrame {
             LOGGER.log(Level.WARNING, "Error exporting PDF report", ex);
             errorLabel.setText("Failed to export PDF: " + ex.getMessage());
         }
-    }
-
-    protected JFileChooser createFileChooser() {
-        return new JFileChooser();
     }
 
     private static class EventWrapper {

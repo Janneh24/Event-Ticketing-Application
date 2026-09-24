@@ -49,6 +49,12 @@ class EventTest {
         assertThat(event1).isNotEqualTo(event3);
         assertThat(event1).isNotEqualTo(null);
         assertThat(event1).isNotEqualTo("other object");
+        assertThat(event1).isNotEqualTo(new Event(1L, "Diff Concert", "2026-10-10", "Opera House", 100, 80));
+        assertThat(event1).isNotEqualTo(new Event(1L, "Concert", "2026-12-12", "Opera House", 100, 80));
+        assertThat(event1).isNotEqualTo(new Event(1L, "Concert", "2026-10-10", "Diff Venue", 100, 80));
+        assertThat(event1).isNotEqualTo(new Event(1L, "Concert", "2026-10-10", "Opera House", 200, 80));
+        assertThat(event1).isNotEqualTo(new Event(1L, "Concert", "2026-10-10", "Opera House", 100, 50));
+        assertThat(event1).isNotEqualTo(new Event(1L, null, "2026-10-10", "Opera House", 100, 80));
     }
 
     @Test

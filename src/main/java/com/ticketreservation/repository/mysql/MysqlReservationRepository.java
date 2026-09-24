@@ -41,15 +41,16 @@ public class MysqlReservationRepository implements ReservationRepository {
     @Override
     public TicketReservation findById(long id) {
         String sql = "SELECT * FROM ticket_reservations WHERE id = ?";
+        TicketReservation reservation = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractReservation(rs);
+                    reservation = extractReservation(rs);
                 }
             }
-            return null;
+            return reservation;
         } catch (SQLException e) {
             throw new RepositoryException("Error finding reservation by id: " + id, e);
         }

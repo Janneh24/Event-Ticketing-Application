@@ -58,15 +58,16 @@ public class MysqlSeatRepository implements SeatRepository {
     @Override
     public Seat findById(long id) {
         String sql = "SELECT * FROM seats WHERE id = ?";
+        Seat seat = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return extractSeat(rs);
+                    seat = extractSeat(rs);
                 }
             }
-            return null;
+            return seat;
         } catch (SQLException e) {
             throw new RepositoryException("Error finding seat by id: " + id, e);
         }

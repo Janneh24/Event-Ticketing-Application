@@ -79,6 +79,9 @@ class TicketControllerTest {
         assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 0L, "A-1", "VIP", 150.0, "AVAILABLE")))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 10L, null, "VIP", 150.0, "AVAILABLE")))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 10L, "", "VIP", 150.0, "AVAILABLE")))
                 .isInstanceOf(IllegalArgumentException.class);
 
@@ -105,7 +108,13 @@ class TicketControllerTest {
         assertThatThrownBy(() -> ticketController.reserveTicket(null))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", null, 150.0, 5L, 10L, 50L)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "", 150.0, 5L, 10L, 50L)))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, null, "Alice", 150.0, 5L, 10L, 50L)))
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "", "Alice", 150.0, 5L, 10L, 50L)))
@@ -155,5 +164,17 @@ class TicketControllerTest {
         assertThatThrownBy(() -> ticketController.cancelReservation(99L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Reservation not found");
+    }
+
+    @Test
+    void testCancelReservationWhenSeatOrEventNotFoundStillDeletesReservation() {
+        TicketReservation res = new TicketReservation(2L, "2026-09-16", "Bob", 50.0, 5L, 10L, 50L);
+        when(reservationRepository.findById(2L)).thenReturn(res);
+        when(seatRepository.findById(50L)).thenReturn(null);
+        when(eventRepository.findById(10L)).thenReturn(null);
+
+        ticketController.cancelReservation(2L);
+
+        verify(reservationRepository).delete(2L);
     }
 }
