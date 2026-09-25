@@ -1,7 +1,7 @@
 # Event Ticketing & Venue Seat Reservation Application
 
 [![CI Build](https://github.com/Janneh24/Event-Ticketing-Application/actions/workflows/ci.yml/badge.svg)](https://github.com/Janneh24/Event-Ticketing-Application/actions/workflows/ci.yml)
-[![Coverage Status](https://coveralls.io/repos/github/Janneh24/Event-Ticketing-Application/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/Janneh24/Event-Ticketing-Application?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/Janneh24/Event-Ticketing-Application/badge.svg?branch=main&v=100)](https://coveralls.io/github/Janneh24/Event-Ticketing-Application?branch=main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Janneh24_Event-Ticketing-Application&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Janneh24_Event-Ticketing-Application&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
 
