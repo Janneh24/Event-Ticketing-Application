@@ -76,7 +76,7 @@ Report at `target/pit-reports/index.html`.
 
 ```bash
 docker-compose up -d
-java -cp target/classes com.ticketreservation.app.Main
+mvn compile exec:java -Dexec.mainClass="com.ticketreservation.app.TicketApp"
 ```
 
 ---
