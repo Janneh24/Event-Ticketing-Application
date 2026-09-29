@@ -9,7 +9,9 @@ import com.ticketreservation.repository.mysql.MysqlEventRepository;
 import com.ticketreservation.repository.mysql.MysqlReservationRepository;
 import com.ticketreservation.repository.mysql.MysqlSeatRepository;
 import com.ticketreservation.repository.mysql.MysqlUserRepository;
+import com.ticketreservation.view.AdminView;
 import com.ticketreservation.view.EventSwingView;
+import com.ticketreservation.view.LoginView;
 
 import javax.sql.DataSource;
 import javax.swing.SwingUtilities;
@@ -61,10 +63,91 @@ public class TicketApp {
         TicketController ticketController = new TicketController(reservationRepo, seatRepo, eventRepo);
 
         SwingUtilities.invokeLater(() -> {
-            User defaultUser = userController.getUserByUsername("organizer");
-            currentView = new EventSwingView(eventController, ticketController, defaultUser);
-            currentView.setVisible(true);
+            try {
+                javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {
+            }
+            showLogin(userController, eventController, ticketController);
         });
+    }
+
+    public static void showLogin(UserController userController, EventController eventController, TicketController ticketController) {
+        LoginView loginView = new LoginView(userController);
+        loginView.setTitle("Event Ticketing System - Login");
+
+        javax.swing.JPanel hintPanel = new javax.swing.JPanel(new java.awt.GridLayout(2, 1, 2, 2));
+        hintPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 4, 12));
+        hintPanel.add(new javax.swing.JLabel("👑 Admin Login: username 'organizer', password 'organizer'"));
+        hintPanel.add(new javax.swing.JLabel("👤 Customer Login: username 'customer', password 'customer'"));
+        loginView.add(hintPanel, java.awt.BorderLayout.NORTH);
+        loginView.pack();
+        loginView.setLocationRelativeTo(null);
+        loginView.setVisible(true);
+
+        loginView.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                User user = loginView.getAuthenticatedUser();
+                if (user != null) {
+                    if ("ORGANIZER".equalsIgnoreCase(user.getRole())) {
+                        openAdminPortal(user, userController, eventController, ticketController);
+                    } else {
+                        openCustomerPortal(user, userController, eventController, ticketController);
+                    }
+                }
+            }
+        });
+    }
+
+    private static void openAdminPortal(User adminUser, UserController userController, EventController eventController, TicketController ticketController) {
+        AdminView adminView = new AdminView(eventController, ticketController, userController);
+        adminView.setTitle("Organizer & Admin Dashboard - " + adminUser.getUsername());
+
+        javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+        javax.swing.JMenu navigationMenu = new javax.swing.JMenu("Navigation");
+        javax.swing.JMenuItem customerViewItem = new javax.swing.JMenuItem("Open Customer Reservation Portal");
+        customerViewItem.addActionListener(e -> openCustomerPortal(adminUser, userController, eventController, ticketController));
+        navigationMenu.add(customerViewItem);
+
+        javax.swing.JMenuItem logoutItem = new javax.swing.JMenuItem("Logout / Switch Account");
+        logoutItem.addActionListener(e -> {
+            adminView.dispose();
+            showLogin(userController, eventController, ticketController);
+        });
+        navigationMenu.add(logoutItem);
+        menuBar.add(navigationMenu);
+        adminView.setJMenuBar(menuBar);
+
+        adminView.setLocationRelativeTo(null);
+        adminView.setVisible(true);
+    }
+
+    private static void openCustomerPortal(User user, UserController userController, EventController eventController, TicketController ticketController) {
+        EventSwingView view = new EventSwingView(eventController, ticketController, user);
+        currentView = view;
+        view.setTitle("Customer Portal - Logged in as: " + user.getUsername() + " (" + user.getRole() + ")");
+
+        javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+        javax.swing.JMenu portalMenu = new javax.swing.JMenu("Account");
+        if ("ORGANIZER".equalsIgnoreCase(user.getRole())) {
+            javax.swing.JMenuItem adminItem = new javax.swing.JMenuItem("Return to Admin Dashboard");
+            adminItem.addActionListener(e -> {
+                view.dispose();
+                openAdminPortal(user, userController, eventController, ticketController);
+            });
+            portalMenu.add(adminItem);
+        }
+        javax.swing.JMenuItem logoutItem = new javax.swing.JMenuItem("Logout / Switch Account");
+        logoutItem.addActionListener(e -> {
+            view.dispose();
+            showLogin(userController, eventController, ticketController);
+        });
+        portalMenu.add(logoutItem);
+        menuBar.add(portalMenu);
+        view.setJMenuBar(menuBar);
+
+        view.setLocationRelativeTo(null);
+        view.setVisible(true);
     }
 
     public static void initializeDatabase(DataSource dataSource) {
