@@ -33,11 +33,16 @@ public class AdminView extends JFrame {
     private JTable userTable;
     private DefaultTableModel userTableModel;
 
+    private JTable eventTable;
+    private DefaultTableModel eventTableModel;
+
     private JTextField titleField;
     private JTextField dateField;
     private JTextField venueField;
     private JTextField seatsField;
     private JButton createEventButton;
+    private JButton editEventButton;
+    private JButton deleteEventButton;
     private JLabel errorLabel;
 
     public AdminView(EventController eventController, TicketController ticketController, UserController userController) {
@@ -50,21 +55,54 @@ public class AdminView extends JFrame {
 
     private void initUI() {
         setTitle("Event Ticket System - Organizer Dashboard");
-        setSize(800, 500);
+        setSize(850, 580);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(5, 5));
 
         errorLabel = new JLabel(" ");
         errorLabel.setName("errorLabel");
         errorLabel.setForeground(Color.RED);
         add(errorLabel, BorderLayout.NORTH);
 
-        userTableModel = new DefaultTableModel(new Object[]{"User ID", "Username", "Role", "Enabled"}, 0);
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+
+        // Event Table
+        eventTableModel = new DefaultTableModel(new Object[]{"Event ID", "Title", "Date", "Venue", "Total Seats", "Available Seats"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        eventTable = new JTable(eventTableModel);
+        eventTable.setName("eventTable");
+        eventTable.getSelectionModel().addListSelectionListener(e -> {
+            int row = eventTable.getSelectedRow();
+            if (row >= 0) {
+                titleField.setText(String.valueOf(eventTableModel.getValueAt(row, 1)));
+                dateField.setText(String.valueOf(eventTableModel.getValueAt(row, 2)));
+                venueField.setText(String.valueOf(eventTableModel.getValueAt(row, 3)));
+                seatsField.setText(String.valueOf(eventTableModel.getValueAt(row, 4)));
+            }
+        });
+        centerPanel.add(new JScrollPane(eventTable));
+
+        // User Table
+        userTableModel = new DefaultTableModel(new Object[]{"User ID", "Username", "Role", "Enabled"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         userTable = new JTable(userTableModel);
         userTable.setName("userTable");
-        add(new JScrollPane(userTable), BorderLayout.CENTER);
+        centerPanel.add(new JScrollPane(userTable));
 
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        add(centerPanel, BorderLayout.CENTER);
+
+        // Form & Button Panel
+        JPanel southPanel = new JPanel(new BorderLayout(5, 5));
+
+        JPanel formPanel = new JPanel(new GridLayout(4, 2, 5, 5));
         formPanel.add(new JLabel("Title:"));
         titleField = new JTextField();
         titleField.setName("titleField");
@@ -84,27 +122,57 @@ public class AdminView extends JFrame {
         seatsField = new JTextField();
         seatsField.setName("seatsField");
         formPanel.add(seatsField);
+        southPanel.add(formPanel, BorderLayout.CENTER);
 
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 5));
         createEventButton = new JButton("Create Event");
         createEventButton.setName("createEventButton");
         createEventButton.addActionListener(e -> createEventAction());
-        formPanel.add(createEventButton);
+        buttonPanel.add(createEventButton);
 
-        add(formPanel, BorderLayout.SOUTH);
+        editEventButton = new JButton("Update Event");
+        editEventButton.setName("editEventButton");
+        editEventButton.addActionListener(e -> editEventAction());
+        buttonPanel.add(editEventButton);
+
+        deleteEventButton = new JButton("Delete Event");
+        deleteEventButton.setName("deleteEventButton");
+        deleteEventButton.addActionListener(e -> deleteEventAction());
+        buttonPanel.add(deleteEventButton);
+        southPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(southPanel, BorderLayout.SOUTH);
 
         refreshData();
     }
 
-    private void refreshData() {
+    public void refreshData() {
+        eventTableModel.setRowCount(0);
+        List<Event> events = eventController.getAllEvents();
+        if (events != null) {
+            for (Event event : events) {
+                eventTableModel.addRow(new Object[]{
+                        event.getId(),
+                        event.getTitle(),
+                        event.getEventDate(),
+                        event.getVenueName(),
+                        event.getTotalSeats(),
+                        event.getAvailableSeats()
+                });
+            }
+        }
+
         userTableModel.setRowCount(0);
         List<User> users = userController.getAllUsers();
-        for (User user : users) {
-            userTableModel.addRow(new Object[]{
-                    user.getId(),
-                    user.getUsername(),
-                    user.getRole(),
-                    user.isEnabled()
-            });
+        if (users != null) {
+            for (User user : users) {
+                userTableModel.addRow(new Object[]{
+                        user.getId(),
+                        user.getUsername(),
+                        user.getRole(),
+                        user.isEnabled()
+                });
+            }
         }
     }
 
@@ -117,7 +185,53 @@ public class AdminView extends JFrame {
             int seats = Integer.parseInt(seatsField.getText().trim());
 
             Event event = new Event(0L, title, date, venue, seats, seats);
-            eventController.createEvent(event);
+            Event created = eventController.createEvent(event);
+            if (created != null && created.getId() > 0) {
+                int numSeats = Math.min(seats, 50);
+                for (int i = 1; i <= numSeats; i++) {
+                    String section = (i <= Math.max(1, numSeats / 4)) ? "VIP" : "REGULAR";
+                    double price = (i <= Math.max(1, numSeats / 4)) ? 100.0 : 50.0;
+                    ticketController.createSeat(new Seat(0L, created.getId(), "Seat-" + i, section, price, "AVAILABLE"));
+                }
+            }
+            refreshData();
+        } catch (RuntimeException ex) {
+            errorLabel.setText(ex.getMessage());
+        }
+    }
+
+    private void editEventAction() {
+        errorLabel.setText(" ");
+        int selectedRow = eventTable.getSelectedRow();
+        if (selectedRow == -1) {
+            errorLabel.setText("Please select an event to edit");
+            return;
+        }
+        try {
+            long eventId = ((Number) eventTableModel.getValueAt(selectedRow, 0)).longValue();
+            String title = titleField.getText().trim();
+            String date = dateField.getText().trim();
+            String venue = venueField.getText().trim();
+            int seats = Integer.parseInt(seatsField.getText().trim());
+
+            Event updated = new Event(eventId, title, date, venue, seats, seats);
+            eventController.updateEvent(updated);
+            refreshData();
+        } catch (RuntimeException ex) {
+            errorLabel.setText(ex.getMessage());
+        }
+    }
+
+    private void deleteEventAction() {
+        errorLabel.setText(" ");
+        int selectedRow = eventTable.getSelectedRow();
+        if (selectedRow == -1) {
+            errorLabel.setText("Please select an event to delete");
+            return;
+        }
+        try {
+            long eventId = ((Number) eventTableModel.getValueAt(selectedRow, 0)).longValue();
+            eventController.deleteEvent(eventId);
             refreshData();
         } catch (RuntimeException ex) {
             errorLabel.setText(ex.getMessage());
