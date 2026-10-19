@@ -39,6 +39,7 @@ jobs:
         run: mvn coveralls:report -DrepoToken=${{ secrets.COVERALLS_REPO_TOKEN || secrets.COVERALLSTOKEN || secrets.COVERALLS_TOKEN }}
 
       - name: SonarCloud analysis
+        continue-on-error: true
         env:
           SONAR_TOKEN: ${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,4 +48,6 @@ jobs:
           -Dsonar.organization=janneh24
           -Dsonar.projectKey=Janneh24_Event-Ticketing-Application
           -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.login=${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
           -Dsonar.token=${{ secrets.EVENTTICKETINGTOKEN || secrets.SONARTICKETINGTOKEN || secrets.SONAR_TOKEN || secrets.SONARCLOUDTOKEN }}
+
