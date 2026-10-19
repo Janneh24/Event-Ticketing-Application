@@ -33,7 +33,6 @@ public class PdfReportExporter {
         document.add(new Paragraph("Event Title: " + event.getTitle(), headerFont));
         document.add(new Paragraph("Date: " + event.getEventDate()));
         document.add(new Paragraph("Venue: " + event.getVenueName()));
-        document.add(new Paragraph(String.format(Locale.US, "Available Seats: %d / %d", event.getAvailableSeats(), event.getTotalSeats())));
         document.add(new Paragraph(" "));
 
         PdfPTable table = new PdfPTable(4);
@@ -42,7 +41,7 @@ public class PdfReportExporter {
         addTableHeader(table, "Res ID");
         addTableHeader(table, "Date");
         addTableHeader(table, "Customer Name");
-        addTableHeader(table, "Amount ($)");
+        addTableHeader(table, "Amount (€)");
 
         double grandTotal = 0.0;
         for (TicketReservation res : reservations) {
@@ -57,7 +56,7 @@ public class PdfReportExporter {
         document.add(new Paragraph(" "));
         
         Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, Color.DARK_GRAY);
-        document.add(new Paragraph(String.format(Locale.US, "Total Revenue: $%.2f", grandTotal), totalFont));
+        document.add(new Paragraph(String.format(Locale.US, "Total Revenue: €%.2f", grandTotal), totalFont));
 
         document.close();
     }

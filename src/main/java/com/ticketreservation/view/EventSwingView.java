@@ -113,7 +113,7 @@ public class EventSwingView extends JFrame {
         centerPanel.add(eventScrollPane);
 
         // Seat Table
-        seatTableModel = new DefaultTableModel(new Object[]{"Seat ID", "Event ID", "Seat Number", "Section", "Price", "Status"}, 0) {
+        seatTableModel = new DefaultTableModel(new Object[]{"Seat ID", "Event ID", "Seat Number", "Section", "Price (€)", "Status"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
