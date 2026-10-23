@@ -2,6 +2,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: ticketing-mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ticketingdb
@@ -11,5 +12,7 @@ services:
       - ./src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
       timeout: 20s
       retries: 10
+      start_period: 30s
