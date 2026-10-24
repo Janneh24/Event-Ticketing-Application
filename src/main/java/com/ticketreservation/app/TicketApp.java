@@ -39,7 +39,7 @@ public class TicketApp {
 
     public static void main(String[] args) {
         String host = System.getProperty("db.host", "localhost");
-        int port = Integer.parseInt(System.getProperty("db.port", "3306"));
+        int port = Integer.parseInt(System.getProperty("db.port", "3308"));
         String database = System.getProperty("db.name", "ticketingdb");
         String user = System.getProperty("db.user", "root");
         String password = System.getProperty("db.password", "root");
