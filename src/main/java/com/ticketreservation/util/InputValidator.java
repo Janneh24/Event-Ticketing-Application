@@ -11,7 +11,7 @@ public final class InputValidator {
     }
 
     public static boolean isValidPrice(double price) {
-        return price >= 0.0 && !Double.isInfinite(price) && !Double.isNaN(price);
+        return !Double.isNaN(price) && !Double.isInfinite(price) && price >= 0.0;
     }
 
     public static boolean isValidSeatCount(int count) {
