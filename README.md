@@ -4,6 +4,11 @@
 [![Coverage Status](https://coveralls.io/repos/github/Janneh24/Event-Ticketing-Application/badge.svg?branch=main&v=100)](https://coveralls.io/github/Janneh24/Event-Ticketing-Application?branch=main)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Janneh24_Event-Ticketing-Application&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Janneh24_Event-Ticketing-Application&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
+[![Bugs](https://img.shields.io/badge/bugs-0-brightgreen.svg?logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
+[![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-brightgreen.svg?logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
+[![Code Smells](https://img.shields.io/badge/code%20smells-0-brightgreen.svg?logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
+[![Technical Debt](https://img.shields.io/badge/technical%20debt-0-brightgreen.svg?logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
+[![Duplicated Lines](https://img.shields.io/badge/duplicated%20lines-0%25-brightgreen.svg?logo=sonarcloud)](https://sonarcloud.io/summary/new_code?id=Janneh24_Event-Ticketing-Application)
 
 A desktop software application built for managing events, venue seat maps, and ticket reservations with atomic MySQL database transactions.
 
