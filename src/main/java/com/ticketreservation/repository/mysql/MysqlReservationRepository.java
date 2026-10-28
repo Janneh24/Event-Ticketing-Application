@@ -102,83 +102,71 @@ public class MysqlReservationRepository implements ReservationRepository {
      */
     @Override
     public TicketReservation createReservationTransaction(TicketReservation reservation) {
-        Connection conn = null;
-        try {
-            conn = dataSource.getConnection();
+        try (Connection conn = dataSource.getConnection()) {
             conn.setAutoCommit(false); // Begin SQL Transaction
 
-            // 1. Check seat availability
-            String checkSeatSql = "SELECT status FROM seats WHERE id = ? FOR UPDATE";
-            try (PreparedStatement psCheck = conn.prepareStatement(checkSeatSql)) {
-                psCheck.setLong(1, reservation.getSeatId());
-                try (ResultSet rs = psCheck.executeQuery()) {
-                    if (!rs.next() || !"AVAILABLE".equalsIgnoreCase(rs.getString("status"))) {
-                        conn.rollback();
-                        throw new RepositoryException("Seat is not available for reservation: " + reservation.getSeatId(), null);
+            try {
+                // 1. Check seat availability
+                String checkSeatSql = "SELECT status FROM seats WHERE id = ? FOR UPDATE";
+                try (PreparedStatement psCheck = conn.prepareStatement(checkSeatSql)) {
+                    psCheck.setLong(1, reservation.getSeatId());
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (!rs.next() || !"AVAILABLE".equalsIgnoreCase(rs.getString("status"))) {
+                            conn.rollback();
+                            throw new RepositoryException("Seat is not available for reservation: " + reservation.getSeatId(), null);
+                        }
                     }
                 }
-            }
 
-            // 2. Update seat status to RESERVED
-            String updateSeatSql = "UPDATE seats SET status = 'RESERVED' WHERE id = ?";
-            try (PreparedStatement psUpdateSeat = conn.prepareStatement(updateSeatSql)) {
-                psUpdateSeat.setLong(1, reservation.getSeatId());
-                psUpdateSeat.executeUpdate();
-            }
-
-            // 3. Decrement available_seats in event
-            String updateEventSql = "UPDATE events SET available_seats = available_seats - 1 WHERE id = ? AND available_seats > 0";
-            try (PreparedStatement psUpdateEvent = conn.prepareStatement(updateEventSql)) {
-                psUpdateEvent.setLong(1, reservation.getEventId());
-                int rows = psUpdateEvent.executeUpdate();
-                if (rows == 0) {
-                    conn.rollback();
-                    throw new RepositoryException("No available seats left for event: " + reservation.getEventId(), null);
+                // 2. Update seat status to RESERVED
+                String updateSeatSql = "UPDATE seats SET status = 'RESERVED' WHERE id = ?";
+                try (PreparedStatement psUpdateSeat = conn.prepareStatement(updateSeatSql)) {
+                    psUpdateSeat.setLong(1, reservation.getSeatId());
+                    psUpdateSeat.executeUpdate();
                 }
-            }
 
-            // 4. Insert ticket_reservation record
-            String insertReservationSql = "INSERT INTO ticket_reservations (reservation_date, customer_name, total_amount, user_id, event_id, seat_id) VALUES (?, ?, ?, ?, ?, ?)";
-            try (PreparedStatement psInsert = conn.prepareStatement(insertReservationSql, Statement.RETURN_GENERATED_KEYS)) {
-                psInsert.setString(1, reservation.getReservationDate());
-                psInsert.setString(2, reservation.getCustomerName());
-                psInsert.setDouble(3, reservation.getTotalAmount());
-                if (reservation.getUserId() != null) {
-                    psInsert.setLong(4, reservation.getUserId());
-                } else {
-                    psInsert.setNull(4, Types.BIGINT);
+                // 3. Decrement available_seats in event
+                String updateEventSql = "UPDATE events SET available_seats = available_seats - 1 WHERE id = ? AND available_seats > 0";
+                try (PreparedStatement psUpdateEvent = conn.prepareStatement(updateEventSql)) {
+                    psUpdateEvent.setLong(1, reservation.getEventId());
+                    int rows = psUpdateEvent.executeUpdate();
+                    if (rows == 0) {
+                        conn.rollback();
+                        throw new RepositoryException("No available seats left for event: " + reservation.getEventId(), null);
+                    }
                 }
-                psInsert.setLong(5, reservation.getEventId());
-                psInsert.setLong(6, reservation.getSeatId());
-                psInsert.executeUpdate();
 
-                try (ResultSet generatedKeys = psInsert.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
+                // 4. Insert ticket_reservation record
+                String insertReservationSql = "INSERT INTO ticket_reservations (reservation_date, customer_name, total_amount, user_id, event_id, seat_id) VALUES (?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement psInsert = conn.prepareStatement(insertReservationSql, Statement.RETURN_GENERATED_KEYS)) {
+                    psInsert.setString(1, reservation.getReservationDate());
+                    psInsert.setString(2, reservation.getCustomerName());
+                    psInsert.setDouble(3, reservation.getTotalAmount());
+                    if (reservation.getUserId() != null) {
+                        psInsert.setLong(4, reservation.getUserId());
+                    } else {
+                        psInsert.setNull(4, Types.BIGINT);
+                    }
+                    psInsert.setLong(5, reservation.getEventId());
+                    psInsert.setLong(6, reservation.getSeatId());
+                    psInsert.executeUpdate();
+
+                    try (ResultSet generatedKeys = psInsert.getGeneratedKeys()) {
+                        generatedKeys.next();
                         reservation.setId(generatedKeys.getLong(1));
                     }
                 }
-            }
 
-            conn.commit(); // Commit Transaction
-            return reservation;
+                conn.commit(); // Commit Transaction
+                return reservation;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw new RepositoryException("Failed to execute reservation transaction", e);
+            }
+        } catch (RepositoryException e) {
+            throw e; // Re-throw RepositoryException as-is (seat not available, no seats left)
         } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    // Suppress rollback exception
-                }
-            }
             throw new RepositoryException("Failed to execute reservation transaction", e);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    // Suppress close exception
-                }
-            }
         }
     }
 

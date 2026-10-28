@@ -86,9 +86,8 @@ public class MysqlSeatRepository implements SeatRepository {
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    seat.setId(generatedKeys.getLong(1));
-                }
+                generatedKeys.next();
+                seat.setId(generatedKeys.getLong(1));
             }
             return seat;
         } catch (SQLException e) {

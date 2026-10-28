@@ -68,9 +68,8 @@ public class MysqlEventRepository implements EventRepository {
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    event.setId(generatedKeys.getLong(1));
-                }
+                generatedKeys.next();
+                event.setId(generatedKeys.getLong(1));
             }
             return event;
         } catch (SQLException e) {

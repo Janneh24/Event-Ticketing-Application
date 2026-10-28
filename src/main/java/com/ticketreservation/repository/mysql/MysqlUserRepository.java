@@ -85,9 +85,8 @@ public class MysqlUserRepository implements UserRepository {
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    user.setId(generatedKeys.getLong(1));
-                }
+                generatedKeys.next();
+                user.setId(generatedKeys.getLong(1));
             }
             return user;
         } catch (SQLException e) {

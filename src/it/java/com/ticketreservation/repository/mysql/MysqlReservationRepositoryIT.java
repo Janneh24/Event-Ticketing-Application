@@ -141,4 +141,38 @@ class MysqlReservationRepositoryIT extends AbstractMysqlRepositoryIT {
     void testFindByIdNotFoundReturnsNull() {
         assertThat(reservationRepository.findById(999999L)).isNull();
     }
+
+    @Test
+    void testCreateReservationTransactionRollbackWhenSeatNotFound() {
+        User user = userRepository.save(new User(0L, "hank", "pass", "CUSTOMER", true));
+        Event event = eventRepository.save(new Event(0L, "Jazz Night", "2026-11-20", "Lounge", 10, 10));
+
+        // Seat ID 999999L does not exist in the database, so rs.next() returns false
+        TicketReservation reservation = new TicketReservation(0L, "2026-11-20", "Hank", 60.0, user.getId(), event.getId(), 999999L);
+
+        assertThatThrownBy(() -> reservationRepository.createReservationTransaction(reservation))
+                .isInstanceOf(RepositoryException.class)
+                .hasMessageContaining("Seat is not available for reservation: 999999");
+
+        // Verify Event available_seats remained unchanged at 10
+        Event unchangedEvent = eventRepository.findById(event.getId());
+        assertThat(unchangedEvent.getAvailableSeats()).isEqualTo(10);
+    }
+
+    @Test
+    void testCreateReservationTransactionSqlExceptionTriggersRollback() {
+        Event event = eventRepository.save(new Event(0L, "Opera Show", "2026-10-15", "Florence Theatre", 100, 100));
+        Seat seat = seatRepository.save(new Seat(0L, event.getId(), "A-1", "VIP", 150.0, "AVAILABLE"));
+
+        // Non-existent user ID 9999999L causes a real foreign key constraint failure in MySQL
+        TicketReservation invalid = new TicketReservation(0L, "2026-10-28", "Customer", 150.0, 9999999L, event.getId(), seat.getId());
+
+        assertThatThrownBy(() -> reservationRepository.createReservationTransaction(invalid))
+                .isInstanceOf(RepositoryException.class)
+                .hasMessageContaining("Failed to execute reservation transaction");
+
+        // Verify rollback happened: seat remains AVAILABLE
+        Seat restoredSeat = seatRepository.findById(seat.getId());
+        assertThat(restoredSeat.getStatus()).isEqualTo("AVAILABLE");
+    }
 }
