@@ -201,15 +201,14 @@ class EventSwingViewTest {
     }
 
     @Test
-    void testExportPdfButtonSuccessWithCustomFileChooser() throws Exception {
+    void testExportPdfButtonSuccessWithCustomFileSaveDialog() throws Exception {
         java.io.File tempFile = java.io.File.createTempFile("test_export_", ".pdf");
         tempFile.deleteOnExit();
 
-        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
-        when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.APPROVE_OPTION);
-        when(mockChooser.getSelectedFile()).thenReturn(tempFile);
+        FileSaveDialog mockDialog = org.mockito.Mockito.mock(FileSaveDialog.class);
+        when(mockDialog.showSaveDialog(any(), any())).thenReturn(tempFile);
 
-        view.setFileChooser(mockChooser);
+        view.setFileSaveDialog(mockDialog);
 
         TicketReservation matchingRes = new TicketReservation(1L, "2026-09-16", "Alice", 150.0, 1L, 10L, 50L);
         TicketReservation nonMatchingRes = new TicketReservation(2L, "2026-09-16", "Bob", 50.0, 2L, 99L, 60L);
@@ -223,10 +222,10 @@ class EventSwingViewTest {
 
     @Test
     void testExportPdfButtonCancelDialog() {
-        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
-        when(mockChooser.showSaveDialog(any())).thenReturn(javax.swing.JFileChooser.CANCEL_OPTION);
+        FileSaveDialog mockDialog = org.mockito.Mockito.mock(FileSaveDialog.class);
+        when(mockDialog.showSaveDialog(any(), any())).thenReturn(null);
 
-        view.setFileChooser(mockChooser);
+        view.setFileSaveDialog(mockDialog);
 
         when(ticketController.getAllReservations()).thenReturn(Collections.emptyList());
         GuiActionRunner.execute(() -> window.button("exportPdfButton").target().doClick());
@@ -251,13 +250,13 @@ class EventSwingViewTest {
     }
 
     @Test
-    void testGetFileChooserDefaultAndCustom() {
-        view.setFileChooser(null);
-        assertThat(view.getFileChooser()).isNotNull();
+    void testGetFileSaveDialogDefaultAndCustom() {
+        view.setFileSaveDialog(null);
+        assertThat(view.getFileSaveDialog()).isNotNull();
 
-        javax.swing.JFileChooser mockChooser = org.mockito.Mockito.mock(javax.swing.JFileChooser.class);
-        view.setFileChooser(mockChooser);
-        assertThat(view.getFileChooser()).isSameAs(mockChooser);
+        FileSaveDialog mockDialog = org.mockito.Mockito.mock(FileSaveDialog.class);
+        view.setFileSaveDialog(mockDialog);
+        assertThat(view.getFileSaveDialog()).isSameAs(mockDialog);
     }
 
     @Test

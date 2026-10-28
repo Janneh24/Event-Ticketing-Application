@@ -85,11 +85,24 @@ class EventControllerTest {
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", "Hall", 0, 0)))
                 .isInstanceOf(IllegalArgumentException.class);
 
+        assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", "Hall", -1, 0)))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", "Hall", 100, -1)))
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> eventController.createEvent(new Event(0L, "Concert", "2026-10-10", "Hall", 100, 101)))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void testCreateEventZeroAvailableSeatsSoldOutSuccess() {
+        Event soldOut = new Event(0L, "Sold Out", "2026-10-10", "Hall", 100, 0);
+        when(eventRepository.save(soldOut)).thenReturn(new Event(2L, "Sold Out", "2026-10-10", "Hall", 100, 0));
+
+        Event created = eventController.createEvent(soldOut);
+        assertThat(created.getId()).isEqualTo(2L);
+        assertThat(created.getAvailableSeats()).isZero();
     }
 
     @Test
@@ -102,6 +115,18 @@ class EventControllerTest {
         Event invalidId = new Event(0L, "Concert", "2026-10-10", "Hall", 100, 100);
         assertThatThrownBy(() -> eventController.updateEvent(invalidId))
                 .isInstanceOf(IllegalArgumentException.class);
+
+        Event negativeId = new Event(-1L, "Concert", "2026-10-10", "Hall", 100, 100);
+        assertThatThrownBy(() -> eventController.updateEvent(negativeId))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        Event invalidTitle = new Event(1L, "", "2026-10-10", "Hall", 100, 100);
+        assertThatThrownBy(() -> eventController.updateEvent(invalidTitle))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        Event invalidSeats = new Event(1L, "Concert", "2026-10-10", "Hall", 0, 0);
+        assertThatThrownBy(() -> eventController.updateEvent(invalidSeats))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -110,6 +135,9 @@ class EventControllerTest {
         verify(eventRepository).delete(1L);
 
         assertThatThrownBy(() -> eventController.deleteEvent(0L))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> eventController.deleteEvent(-1L))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -41,18 +41,18 @@ public class EventSwingView extends JFrame {
     private final EventController eventController;
     private final TicketController ticketController;
     private User currentUser;
-    private JFileChooser fileChooser;
+    private FileSaveDialog fileSaveDialog = new DefaultFileSaveDialog();
 
     public void setCurrentUser(User currentUser) {
         this.currentUser = currentUser;
     }
 
-    public void setFileChooser(JFileChooser fileChooser) {
-        this.fileChooser = fileChooser;
+    public void setFileSaveDialog(FileSaveDialog fileSaveDialog) {
+        this.fileSaveDialog = (fileSaveDialog != null) ? fileSaveDialog : new DefaultFileSaveDialog();
     }
 
-    public JFileChooser getFileChooser() {
-        return (this.fileChooser != null) ? this.fileChooser : new JFileChooser();
+    public FileSaveDialog getFileSaveDialog() {
+        return this.fileSaveDialog;
     }
 
     private JTable eventTable;
@@ -298,10 +298,9 @@ public class EventSwingView extends JFrame {
             }
         }
 
-        JFileChooser chooser = getFileChooser();
-        chooser.setSelectedFile(new File("Event_Summary_" + event.getId() + ".pdf"));
-        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            exportPdfToFile(event, eventReservations, chooser.getSelectedFile());
+        File targetFile = getFileSaveDialog().showSaveDialog(this, "Event_Summary_" + event.getId() + ".pdf");
+        if (targetFile != null) {
+            exportPdfToFile(event, eventReservations, targetFile);
         }
     }
 

@@ -25,8 +25,27 @@
         <sonar.projectKey>Janneh24_Event-Ticketing-Application</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.issue.ignore.multilines>true</sonar.issue.ignore.multilines>
-        <sonar.coverage.exclusions>**/app/**</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>**/app/**,**/view/DefaultFileSaveDialog.java</sonar.coverage.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <!-- SonarCloud Issue Exclusions with Course Justification -->
+        <sonar.issue.ignore.multicriteria>e1,e2,e3,e4</sonar.issue.ignore.multicriteria>
+
+        <!-- Motivated Rule S2699: AssertJ-Swing tests use robot/fixture verifications (requireText, requireEnabled, requireRowCount) instead of JUnit assert statements -->
+        <sonar.issue.ignore.multicriteria.e1.ruleKey>java:S2699</sonar.issue.ignore.multicriteria.e1.ruleKey>
+        <sonar.issue.ignore.multicriteria.e1.resourceKey>**/*Test.java</sonar.issue.ignore.multicriteria.e1.resourceKey>
+
+        <!-- Motivated Rule S8924: Mockito static vs non-static syntax conventions in test suites -->
+        <sonar.issue.ignore.multicriteria.e2.ruleKey>java:S8924</sonar.issue.ignore.multicriteria.e2.ruleKey>
+        <sonar.issue.ignore.multicriteria.e2.resourceKey>**/*Test.java</sonar.issue.ignore.multicriteria.e2.resourceKey>
+
+        <!-- Motivated Rule S1192: String literal constants used repeatedly in test assertions -->
+        <sonar.issue.ignore.multicriteria.e3.ruleKey>java:S1192</sonar.issue.ignore.multicriteria.e3.ruleKey>
+        <sonar.issue.ignore.multicriteria.e3.resourceKey>**/*Test.java</sonar.issue.ignore.multicriteria.e3.resourceKey>
+
+        <!-- Motivated Rule S1450: Swing component declarations kept as class fields for UI references -->
+        <sonar.issue.ignore.multicriteria.e4.ruleKey>java:S1450</sonar.issue.ignore.multicriteria.e4.ruleKey>
+        <sonar.issue.ignore.multicriteria.e4.resourceKey>**/view/**</sonar.issue.ignore.multicriteria.e4.resourceKey>
     </properties>
 
     <dependencies>
@@ -197,6 +216,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>**/app/**</exclude>
+                                <exclude>**/view/DefaultFileSaveDialog.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>

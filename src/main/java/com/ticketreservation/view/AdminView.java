@@ -39,9 +39,6 @@ public class AdminView extends JFrame {
     private JTextField dateField;
     private JTextField venueField;
     private JTextField seatsField;
-    private JButton createEventButton;
-    private JButton editEventButton;
-    private JButton deleteEventButton;
 
     private JTable reservationTable;
     private DefaultTableModel reservationTableModel;
@@ -52,7 +49,6 @@ public class AdminView extends JFrame {
     private JTextField usernameField;
     private JTextField passwordField;
     private JComboBox<String> roleCombo;
-    private JButton createUserButton;
 
     private JLabel errorLabel;
 
@@ -123,17 +119,17 @@ public class AdminView extends JFrame {
         eventControls.add(eventForm, BorderLayout.CENTER);
 
         JPanel eventButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 3));
-        createEventButton = new JButton("Create Event");
+        JButton createEventButton = new JButton("Create Event");
         createEventButton.setName("createEventButton");
         createEventButton.addActionListener(e -> createEventAction());
         eventButtons.add(createEventButton);
 
-        editEventButton = new JButton("Update Event");
+        JButton editEventButton = new JButton("Update Event");
         editEventButton.setName("editEventButton");
         editEventButton.addActionListener(e -> editEventAction());
         eventButtons.add(editEventButton);
 
-        deleteEventButton = new JButton("Delete Event");
+        JButton deleteEventButton = new JButton("Delete Event");
         deleteEventButton.setName("deleteEventButton");
         deleteEventButton.addActionListener(e -> deleteEventAction());
         eventButtons.add(deleteEventButton);
@@ -204,7 +200,7 @@ public class AdminView extends JFrame {
         roleCombo.setName("roleCombo");
         userControls.add(roleCombo);
 
-        createUserButton = new JButton("Add User");
+        JButton createUserButton = new JButton("Add User");
         createUserButton.setName("createUserButton");
         createUserButton.addActionListener(e -> createUserAction());
         userControls.add(createUserButton);

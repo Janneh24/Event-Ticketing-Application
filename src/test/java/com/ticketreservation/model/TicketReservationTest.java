@@ -47,6 +47,7 @@ class TicketReservationTest {
         // Equality with identical object
         assertThat(res1).isEqualTo(res2);
         assertThat(res1.hashCode()).isEqualTo(res2.hashCode());
+        assertThat(res1.hashCode()).isNotZero().isNotEqualTo(res3.hashCode());
 
         // Inequality tests
         assertThat(res1).isNotEqualTo(res3);

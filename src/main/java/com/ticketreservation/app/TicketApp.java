@@ -66,6 +66,7 @@ public class TicketApp {
             try {
                 javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
             } catch (Exception ignored) {
+                // Fallback to default Swing Look and Feel if system theme is unavailable
             }
             showLogin(userController, eventController, ticketController);
         });

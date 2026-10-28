@@ -77,7 +77,12 @@ class TicketControllerTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 0L, "A-1", "VIP", 150.0, "AVAILABLE")))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Event ID must be positive for seat");
+
+        assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, -1L, "A-1", "VIP", 150.0, "AVAILABLE")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Event ID must be positive for seat");
 
         assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 10L, null, "VIP", 150.0, "AVAILABLE")))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -86,6 +91,9 @@ class TicketControllerTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 10L, "A-1", "VIP", 0.0, "AVAILABLE")))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThatThrownBy(() -> ticketController.createSeat(new Seat(0L, 10L, "A-1", "VIP", -1.0, "AVAILABLE")))
                 .isInstanceOf(IllegalArgumentException.class);
 
         when(eventRepository.findById(99L)).thenReturn(null);
@@ -121,10 +129,20 @@ class TicketControllerTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "Alice", 150.0, 5L, 0L, 50L)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Event ID must be positive for reservation");
+
+        assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "Alice", 150.0, 5L, -1L, 50L)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Event ID must be positive for reservation");
 
         assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "Alice", 150.0, 5L, 10L, 0L)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Seat ID must be positive for reservation");
+
+        assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "Alice", 150.0, 5L, 10L, -1L)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Seat ID must be positive for reservation");
 
         when(seatRepository.findById(99L)).thenReturn(null);
         assertThatThrownBy(() -> ticketController.reserveTicket(new TicketReservation(0L, "2026-09-16", "Alice", 150.0, 5L, 10L, 99L)))
@@ -158,7 +176,12 @@ class TicketControllerTest {
         assertThat(event.getAvailableSeats()).isEqualTo(51);
 
         assertThatThrownBy(() -> ticketController.cancelReservation(0L))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Reservation ID must be positive for cancellation");
+
+        assertThatThrownBy(() -> ticketController.cancelReservation(-1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Reservation ID must be positive for cancellation");
 
         when(reservationRepository.findById(99L)).thenReturn(null);
         assertThatThrownBy(() -> ticketController.cancelReservation(99L))

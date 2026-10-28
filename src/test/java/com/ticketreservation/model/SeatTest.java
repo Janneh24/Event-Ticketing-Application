@@ -44,6 +44,7 @@ class SeatTest {
         // Equality with identical object
         assertThat(seat1).isEqualTo(seat2);
         assertThat(seat1.hashCode()).isEqualTo(seat2.hashCode());
+        assertThat(seat1.hashCode()).isNotZero().isNotEqualTo(seat3.hashCode());
 
         // Inequality tests
         assertThat(seat1).isNotEqualTo(seat3);

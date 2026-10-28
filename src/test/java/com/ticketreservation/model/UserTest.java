@@ -41,6 +41,7 @@ class UserTest {
         // Equality with identical object
         assertThat(user1).isEqualTo(user2);
         assertThat(user1.hashCode()).isEqualTo(user2.hashCode());
+        assertThat(user1.hashCode()).isNotZero().isNotEqualTo(user3.hashCode());
 
         // Inequality tests
         assertThat(user1).isNotEqualTo(user3);

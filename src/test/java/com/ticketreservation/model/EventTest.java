@@ -44,6 +44,7 @@ class EventTest {
         // Equality with identical object
         assertThat(event1).isEqualTo(event2);
         assertThat(event1.hashCode()).isEqualTo(event2.hashCode());
+        assertThat(event1.hashCode()).isNotZero().isNotEqualTo(event3.hashCode());
 
         // Inequality tests
         assertThat(event1).isNotEqualTo(event3);

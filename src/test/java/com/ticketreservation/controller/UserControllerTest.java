@@ -95,22 +95,40 @@ class UserControllerTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, null, "pass", "CUSTOMER", true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "", "pass", "CUSTOMER", true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", null, "CUSTOMER", true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Password cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "", "CUSTOMER", true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Password cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", null, true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Role cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", "", true)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Role cannot be null or empty");
+
+        assertThatThrownBy(() -> userController.createUser(new User(0L, "   ", "pass", "CUSTOMER", true)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username cannot be null or empty");
+
+        assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "   ", "CUSTOMER", true)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Password cannot be null or empty");
+
+        assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", "   ", true)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Role cannot be null or empty");
 
         assertThatThrownBy(() -> userController.createUser(new User(0L, "alice", "pass", "INVALID_ROLE", true)))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -124,10 +142,23 @@ class UserControllerTest {
 
         assertThat(userController.updateUser(user)).isEqualTo(user);
 
+        User organizer = new User(2L, "admin", "pass", "ORGANIZER", true);
+        when(userRepository.update(organizer)).thenReturn(organizer);
+        assertThat(userController.updateUser(organizer)).isEqualTo(organizer);
+
         User invalidId = new User(0L, "alice", "pass", "CUSTOMER", true);
         assertThatThrownBy(() -> userController.updateUser(invalidId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User ID must be positive for update");
+
+        User negativeId = new User(-1L, "alice", "pass", "CUSTOMER", true);
+        assertThatThrownBy(() -> userController.updateUser(negativeId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("User ID must be positive for update");
+
+        User invalidUsername = new User(1L, "", "pass", "CUSTOMER", true);
+        assertThatThrownBy(() -> userController.updateUser(invalidUsername))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -136,6 +167,10 @@ class UserControllerTest {
         verify(userRepository).delete(1L);
 
         assertThatThrownBy(() -> userController.deleteUser(0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("User ID must be positive for deletion");
+
+        assertThatThrownBy(() -> userController.deleteUser(-1L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User ID must be positive for deletion");
     }
@@ -151,16 +186,28 @@ class UserControllerTest {
         assertThat(userController.login("alice", "pass")).isEqualTo(user);
 
         assertThatThrownBy(() -> userController.login("", "pass"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
+
+        assertThatThrownBy(() -> userController.login("   ", "pass"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
 
         assertThatThrownBy(() -> userController.login(null, "pass"))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
 
         assertThatThrownBy(() -> userController.login("alice", ""))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
+
+        assertThatThrownBy(() -> userController.login("alice", "   "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
 
         assertThatThrownBy(() -> userController.login("alice", null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username and password must not be empty");
 
         assertThatThrownBy(() -> userController.login("alice", "wrongpass"))
                 .isInstanceOf(IllegalArgumentException.class)
